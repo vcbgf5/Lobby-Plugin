@@ -11,18 +11,31 @@ commands:
     usage: /setspawnlobby
     permission: lobbyspawn.setspawn
   addserverhologram:
-    description: Tworzy hologram + portal (status online/offline, liczba graczy) na złotej płytce
+    description: Tworzy portal (status online/offline, liczba graczy) na złotej płytce
     usage: /addserverhologram <nazwaServera> [maxGraczy]
     permission: lobbyspawn.setspawn
   removeportal:
-    description: Usuwa hologram/portal serwera
+    description: Usuwa portal serwera
     usage: /removeportal <nazwaServera>
     permission: lobbyspawn.setspawn
   fixmovement:
     description: Resetuje predkosc chodzenia/latania gracza (naprawia zablokowany ruch po auth-pluginach)
     usage: /fixmovement <gracz>
+  leavequeue:
+    description: Opuszcza kolejkę do pełnego serwera
+    usage: /leavequeue
+  reloadlobby:
+    description: Przeładowuje config.yml pluginu na żywo (spawn, portale, bossbar)
+    usage: /reloadlobby
+    permission: lobbyspawn.reload
 
 permissions:
   lobbyspawn.setspawn:
     description: Pozwala ustawić spawn Lobby i zarządzać portalami
+    default: op
+  lobbyspawn.reload:
+    description: Pozwala przeładować konfigurację LobbySpawn komendą /reloadlobby
+    default: op
+  lobbyspawn.fixmovement.others:
+    description: Pozwala naprawiać ruch innych graczy komendą /fixmovement (bez tego można naprawić tylko siebie)
     default: op

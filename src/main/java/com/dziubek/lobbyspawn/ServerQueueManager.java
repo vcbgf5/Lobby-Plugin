@@ -1,5 +1,7 @@
 package com.dziubek.lobbyspawn;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.entity.Player;
 
 import java.util.LinkedHashMap;
@@ -14,7 +16,7 @@ public class ServerQueueManager {
 
     // nazwa serwera -> kolejka UUID graczy czekających
     private final Map<String, Queue<UUID>> queues = new LinkedHashMap<>();
-    // nazwa serwera -> maksymalna liczba graczy (ustawiona przy tworzeniu portalu/hologramu)
+    // nazwa serwera -> maksymalna liczba graczy (ustawiona przy tworzeniu portalu)
     private final Map<String, Integer> maxPlayers = new LinkedHashMap<>();
 
     public ServerQueueManager(LobbySpawnPlugin plugin) {
@@ -33,11 +35,25 @@ public class ServerQueueManager {
     public void enqueue(String serverName, Player player) {
         Queue<UUID> q = queues.computeIfAbsent(serverName, k -> new LinkedList<>());
         if (q.contains(player.getUniqueId())) {
-            player.sendMessage("§eJuż jesteś w kolejce do serwera " + serverName + " (pozycja " + (position(serverName, player.getUniqueId()) + 1) + ").");
+            player.sendMessage("§eJuż jesteś w kolejce do serwera " + serverName + " (pozycja " + (position(serverName, player.getUniqueId()) + 1) + "). §7Wpisz /leavequeue aby zrezygnować.");
             return;
         }
         q.add(player.getUniqueId());
-        player.sendMessage("§eSerwer " + serverName + " jest pełny. Dodano Cię do kolejki (pozycja " + q.size() + ").");
+        player.sendMessage("§eSerwer " + serverName + " jest pełny. Dodano Cię do kolejki (pozycja " + q.size() + "). §7Wpisz /leavequeue aby zrezygnować.");
+    }
+
+    /**
+     * Usuwa gracza z kolejki na jego własne żądanie (/leavequeue).
+     * @return true jeśli gracz faktycznie w jakiejś kolejce czekał
+     */
+    public boolean leaveQueue(Player player) {
+        boolean removed = false;
+        for (Queue<UUID> q : queues.values()) {
+            if (q.remove(player.getUniqueId())) {
+                removed = true;
+            }
+        }
+        return removed;
     }
 
     public void removeFromAll(UUID uuid) {
@@ -76,6 +92,7 @@ public class ServerQueueManager {
             int current = plugin.getPlayerCounts().getCount(serverName);
             int max = maxPlayers.getOrDefault(serverName, 100);
             if (current < 0 || current >= max) {
+                announcePositions(serverName, q);
                 continue; // nadal pełny albo nie znamy stanu
             }
 
@@ -85,6 +102,25 @@ public class ServerQueueManager {
                 player.sendMessage("§aZwolniło się miejsce! Teleportacja na " + serverName + "...");
                 plugin.sendToServer(player, serverName);
             }
+            announcePositions(serverName, q);
+        }
+    }
+
+    /**
+     * Pokazuje każdemu czekającemu graczowi jego aktualną pozycję na action-barze,
+     * żeby nie musiał zgadywać czy kolejka w ogóle się rusza.
+     */
+    private void announcePositions(String serverName, Queue<UUID> q) {
+        int total = q.size();
+        int i = 1;
+        for (UUID uuid : q) {
+            Player player = plugin.getServer().getPlayer(uuid);
+            if (player != null && player.isOnline()) {
+                Component actionBar = LegacyComponentSerializer.legacySection()
+                        .deserialize("§eKolejka do " + serverName + ": §f#" + i + " §7z §f" + total);
+                player.sendActionBar(actionBar);
+            }
+            i++;
         }
     }
 }

@@ -1,16 +1,13 @@
 package com.dziubek.lobbyspawn;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 public class PortalManager {
@@ -23,7 +20,6 @@ public class PortalManager {
     }
 
     public void loadAll() {
-        plugin.getHolograms().removeAll();
         portals.clear();
 
         ConfigurationSection section = plugin.getConfig().getConfigurationSection("portals");
@@ -55,44 +51,17 @@ public class PortalManager {
             PortalData portal = new PortalData(id, loc, displayName, targetServer, maxPlayers);
             portals.put(id, portal);
             plugin.getQueue().setMaxPlayers(targetServer, maxPlayers);
-
-            createHologram(portal);
         }
     }
 
-    private void createHologram(PortalData portal) {
-        // plateLocation to JUŻ środek bloku (zapisane w addPortal jako blockX+0.5 itd.) -
-        // więc tutaj dodajemy TYLKO wysokość, bez ponownego +0.5 na x/z (to był powód
-        // przesunięcia hologramu "obok" płytki zamiast idealnie nad nią)
-        Location holoLocation = portal.getPlateLocation().clone().add(0, 1.9, 0);
-
-        List<String> lines = new ArrayList<>();
-        lines.add(portal.getDisplayName());
-        lines.add("&7Status: &8ładowanie...");
-        lines.add("&7Graczy: &8?&7/&a" + portal.getMaxPlayers());
-        lines.add("&7Wersja: &b" + shortVersion());
-
-        plugin.getHolograms().create("portal-" + portal.getId(), holoLocation, lines);
-    }
-
+    /**
+     * Odpytuje proxy o aktualny status (online/offline, liczba graczy) każdego serwera z portalem.
+     * Dane trafiają do PlayerCountManager - korzystają z nich kolejka (ServerQueueManager),
+     * launch pad (LaunchPadListener) i cząsteczki portalu (PortalParticleTask).
+     */
     public void refreshPlayerCounts() {
         for (PortalData portal : portals.values()) {
             plugin.getPlayerCounts().requestStatus(portal.getTargetServer());
-
-            boolean online = plugin.getPlayerCounts().isOnline(portal.getTargetServer());
-            int count = plugin.getPlayerCounts().getCount(portal.getTargetServer());
-
-            // wolimy prawdziwy max z pingu; jak jeszcze go nie znamy, używamy tego z configu jako fallback
-            int liveMax = plugin.getPlayerCounts().getMaxPlayers(portal.getTargetServer());
-            int displayMax = liveMax >= 0 ? liveMax : portal.getMaxPlayers();
-
-            String statusLine = online ? "&7Status: &a&lONLINE" : "&7Status: &c&lOFFLINE";
-            String countLine = online
-                    ? "&7Graczy: &a" + count + "&7/&a" + displayMax
-                    : "&7Graczy: &8-&7/&a" + displayMax;
-
-            plugin.getHolograms().updateLine("portal-" + portal.getId(), 1, statusLine);
-            plugin.getHolograms().updateLine("portal-" + portal.getId(), 2, countLine);
         }
     }
 
@@ -132,19 +101,11 @@ public class PortalManager {
         }
         cfg.set("portals." + id, null);
         plugin.saveConfig();
-        plugin.getHolograms().remove("portal-" + id);
         portals.remove(id);
         return true;
     }
 
     public Collection<PortalData> getPortals() {
         return portals.values();
-    }
-
-    private String shortVersion() {
-        // np. "1.20.4" z pełnego stringa Bukkita
-        String full = Bukkit.getBukkitVersion();
-        int dash = full.indexOf('-');
-        return dash > 0 ? full.substring(0, dash) : full;
     }
 }

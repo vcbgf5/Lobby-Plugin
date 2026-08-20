@@ -9,13 +9,13 @@ messages:
   spawn-set: "&aSpawn Lobby ustawiony w tym miejscu!"
   spawn-not-set: "&cSpawn Lobby nie jest jeszcze ustawiony. Użyj /setspawnlobby."
 
-# co ile sekund odświeżać status/liczbę graczy na hologramach portali
+# co ile sekund odświeżać status/liczbę graczy portali (kolejka, launch pad, cząsteczki)
 portal-refresh-seconds: 5
 
 # co ile sekund sprawdzać czy zwolniło się miejsce dla graczy w kolejce
 queue-check-seconds: 3
 
-# portale/hologramy serwerów tworzone przez /addserverhologram - NIE edytuj ręcznie w trakcie działania serwera
+# portale serwerów tworzone przez /addserverhologram - NIE edytuj ręcznie w trakcie działania serwera
 portals: {}
 
 bossbar-ads:

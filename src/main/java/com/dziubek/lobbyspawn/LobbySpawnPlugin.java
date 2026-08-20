@@ -16,10 +16,10 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
     private Location spawnLocation;
 
-    private HologramManager holograms;
     private PlayerCountManager playerCounts;
     private PortalManager portals;
     private ServerQueueManager queue;
+    private BossBarAdsManager bossBarAds;
 
     private NamespacedKey wandServerKey;
     private NamespacedKey wandMaxKey;
@@ -32,7 +32,6 @@ public class LobbySpawnPlugin extends JavaPlugin {
         wandServerKey = new NamespacedKey(this, "lobbyspawn_wand_server");
         wandMaxKey = new NamespacedKey(this, "lobbyspawn_wand_max");
 
-        holograms = new HologramManager(this);
         playerCounts = new PlayerCountManager(this);
         portals = new PortalManager(this);
         queue = new ServerQueueManager(this);
@@ -47,14 +46,14 @@ public class LobbySpawnPlugin extends JavaPlugin {
         getCommand("addserverhologram").setExecutor(new AddServerHologramCommand(this));
         getCommand("removeportal").setExecutor(new RemovePortalCommand(this));
         getCommand("fixmovement").setExecutor(new FixMovementCommand());
+        getCommand("leavequeue").setExecutor(new LeaveQueueCommand(this));
+        getCommand("reloadlobby").setExecutor(new ReloadLobbyCommand(this));
 
         getServer().getPluginManager().registerEvents(new JoinTeleportListener(this), this);
         getServer().getPluginManager().registerEvents(new LaunchPadListener(this), this);
         getServer().getPluginManager().registerEvents(new QueueQuitListener(this), this);
         getServer().getPluginManager().registerEvents(new WandInteractListener(this), this);
 
-        // hologramy tworzone/aktualizowane idempotentnie - reużywają istniejące ArmorStandy po tagu,
-        // więc nie trzeba już nic czyścić przed wczytaniem
         portals.loadAll();
 
         int refreshTicks = getConfig().getInt("portal-refresh-seconds", 5) * 20;
@@ -63,13 +62,25 @@ public class LobbySpawnPlugin extends JavaPlugin {
         int queueTicks = getConfig().getInt("queue-check-seconds", 3) * 20;
         getServer().getScheduler().runTaskTimer(this, () -> queue.tick(), 60L, queueTicks);
 
-        BossBarAdsManager bossBarAds = new BossBarAdsManager(this);
+        bossBarAds = new BossBarAdsManager(this);
         getServer().getPluginManager().registerEvents(bossBarAds, this);
         bossBarAds.start();
 
         getServer().getScheduler().runTaskTimer(this, new PortalParticleTask(this), 20L, 2L);
 
         getLogger().info("LobbySpawn włączony! Spawn ustawiony: " + (spawnLocation != null) + ", portali: " + portals.getPortals().size());
+    }
+
+    /**
+     * Przeładowuje config.yml i to co z niego zależy na żywo (bez restartu serwera):
+     * spawn, listę portali i bossbar-reklamy. Interwały pętli tick (portal-refresh-seconds,
+     * queue-check-seconds) wymagają nadal restartu, bo są ustawione raz przy planowaniu zadań.
+     */
+    public void reloadLobbyConfig() {
+        reloadConfig();
+        loadSpawnLocation();
+        portals.loadAll();
+        bossBarAds.reload();
     }
 
     public boolean hasSpawn() {
@@ -132,10 +143,6 @@ public class LobbySpawnPlugin extends JavaPlugin {
         } catch (IOException e) {
             getLogger().warning("Nie udało się wysłać gracza na serwer '" + serverName + "': " + e.getMessage());
         }
-    }
-
-    public HologramManager getHolograms() {
-        return holograms;
     }
 
     public PlayerCountManager getPlayerCounts() {

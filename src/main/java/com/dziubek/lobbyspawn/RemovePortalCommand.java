@@ -21,7 +21,7 @@ public class RemovePortalCommand implements CommandExecutor {
 
         boolean removed = plugin.getPortals().removePortal(args[0]);
         if (removed) {
-            sender.sendMessage("§aUsunięto portal/hologram '" + args[0] + "'.");
+            sender.sendMessage("§aUsunięto portal '" + args[0] + "'.");
         } else {
             sender.sendMessage("§cNie znaleziono portalu o nazwie '" + args[0] + "'.");
         }

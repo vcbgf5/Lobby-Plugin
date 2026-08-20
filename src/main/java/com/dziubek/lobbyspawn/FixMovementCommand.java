@@ -21,6 +21,12 @@ public class FixMovementCommand implements CommandExecutor {
             return true;
         }
 
+        boolean isSelf = sender instanceof Player && sender.equals(target);
+        if (!isSelf && !sender.hasPermission("lobbyspawn.fixmovement.others")) {
+            sender.sendMessage("§cNie masz uprawnień do naprawiania ruchu innych graczy.");
+            return true;
+        }
+
         // domyślne wartości vanilla - jeśli jakiś plugin (np. auth) je wyzerował, to je przywraca
         target.setWalkSpeed(0.2f);
         target.setFlySpeed(0.1f);

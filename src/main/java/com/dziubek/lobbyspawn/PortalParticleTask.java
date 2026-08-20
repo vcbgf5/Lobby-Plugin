@@ -44,7 +44,7 @@ public class PortalParticleTask implements Runnable {
             }
 
             if (online) {
-                // subtelny, unoszący się efekt nad hologramem - tylko gdy serwer żyje
+                // subtelny, unoszący się efekt nad portalem - tylko gdy serwer żyje
                 Location above = portal.getPlateLocation().clone().add(0, 2.3, 0);
                 world.spawnParticle(Particle.END_ROD, above, 1, 0.15, 0.05, 0.15, 0.0);
             } else {

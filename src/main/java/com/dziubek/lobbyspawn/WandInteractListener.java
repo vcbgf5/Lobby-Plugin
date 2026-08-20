@@ -53,7 +53,7 @@ public class WandInteractListener implements Listener {
         String displayName = "&6&l" + serverName.toUpperCase();
         plugin.getPortals().addPortal(serverName, block.getLocation(), displayName, serverName, maxPlayers);
 
-        player.sendMessage("§aStworzono hologram + portal dla serwera '" + serverName + "'.");
+        player.sendMessage("§aStworzono portal dla serwera '" + serverName + "'.");
 
         if (item.getAmount() > 1) {
             item.setAmount(item.getAmount() - 1);

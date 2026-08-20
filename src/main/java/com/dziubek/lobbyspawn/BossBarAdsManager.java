@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.List;
 
@@ -21,12 +22,30 @@ public class BossBarAdsManager implements Listener {
     private int currentIndex = 0;
     private double progress = 1.0;
     private int intervalSeconds;
+    private BukkitTask task;
 
     public BossBarAdsManager(LobbySpawnPlugin plugin) {
         this.plugin = plugin;
     }
 
     public void start() {
+        reload();
+    }
+
+    /**
+     * Zatrzymuje obecny bossbar i wczytuje go od nowa z configu - używane też przez /reloadlobby,
+     * żeby zmiana interwału/kolorów/wiadomości nie wymagała restartu serwera.
+     */
+    public void reload() {
+        if (task != null) {
+            task.cancel();
+            task = null;
+        }
+        if (bossBar != null) {
+            bossBar.removeAll();
+            bossBar = null;
+        }
+
         if (!plugin.getConfig().getBoolean("bossbar-ads.enabled", true)) {
             return;
         }
@@ -38,6 +57,8 @@ public class BossBarAdsManager implements Listener {
         }
 
         intervalSeconds = Math.max(1, plugin.getConfig().getInt("bossbar-ads.interval-seconds", 8));
+        currentIndex = 0;
+        progress = 1.0;
 
         BarColor color = parseColor(plugin.getConfig().getString("bossbar-ads.color", "YELLOW"));
         BarStyle style = parseStyle(plugin.getConfig().getString("bossbar-ads.style", "SEGMENTED_10"));
@@ -49,7 +70,7 @@ public class BossBarAdsManager implements Listener {
             bossBar.addPlayer(player);
         }
 
-        plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 20L, 20L);
+        task = plugin.getServer().getScheduler().runTaskTimer(plugin, this::tick, 20L, 20L);
     }
 
     private void tick() {

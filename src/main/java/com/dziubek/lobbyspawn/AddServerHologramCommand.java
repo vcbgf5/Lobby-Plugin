@@ -46,12 +46,12 @@ public class AddServerHologramCommand implements CommandExecutor {
 
         ItemStack wand = new ItemStack(Material.STICK);
         ItemMeta meta = wand.getItemMeta();
-        meta.setDisplayName("§e§lRóżdżka hologramu: §f" + serverName);
+        meta.setDisplayName("§e§lRóżdżka portalu: §f" + serverName);
 
         List<String> lore = new ArrayList<>();
         lore.add("§7Kliknij PRAWYM na złotą płytkę");
         lore.add("§7naciskową, aby stworzyć tam");
-        lore.add("§7hologram + portal do serwera.");
+        lore.add("§7portal do serwera.");
         lore.add("§8Limit graczy: " + maxPlayers);
         meta.setLore(lore);
 
