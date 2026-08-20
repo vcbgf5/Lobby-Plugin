@@ -20,6 +20,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
     private PortalManager portals;
     private ServerQueueManager queue;
     private BossBarAdsManager bossBarAds;
+    private ChatAdsManager chatAds;
 
     private NamespacedKey wandServerKey;
     private NamespacedKey wandMaxKey;
@@ -66,6 +67,9 @@ public class LobbySpawnPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(bossBarAds, this);
         bossBarAds.start();
 
+        chatAds = new ChatAdsManager(this);
+        chatAds.start();
+
         getServer().getScheduler().runTaskTimer(this, new PortalParticleTask(this), 20L, 2L);
 
         getLogger().info("LobbySpawn włączony! Spawn ustawiony: " + (spawnLocation != null) + ", portali: " + portals.getPortals().size());
@@ -81,6 +85,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
         loadSpawnLocation();
         portals.loadAll();
         bossBarAds.reload();
+        chatAds.reload();
     }
 
     public boolean hasSpawn() {

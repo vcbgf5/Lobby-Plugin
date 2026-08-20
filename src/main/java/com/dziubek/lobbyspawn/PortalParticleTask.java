@@ -43,14 +43,22 @@ public class PortalParticleTask implements Runnable {
                 world.spawnParticle(Particle.DUST, point, 1, 0, 0, 0, 0, dust);
             }
 
+            // kolumna 4 statycznych punktów nad portalem (~4 bloki w górę) - widoczna "belka" oznaczająca portal
+            for (int level = 0; level < 4; level++) {
+                double y = 0.6 + level;
+                Location point = portal.getPlateLocation().clone().add(0, y, 0);
+                if (online) {
+                    world.spawnParticle(Particle.END_ROD, point, 1, 0.08, 0.02, 0.08, 0.0);
+                } else {
+                    world.spawnParticle(Particle.SMOKE, point, 1, 0.08, 0.02, 0.08, 0.004);
+                }
+            }
+
             if (online) {
-                // subtelny, unoszący się efekt nad portalem - tylko gdy serwer żyje
-                Location above = portal.getPlateLocation().clone().add(0, 2.3, 0);
-                world.spawnParticle(Particle.END_ROD, above, 1, 0.15, 0.05, 0.15, 0.0);
-            } else {
-                // dymek nad offline'owym portalem - czytelny sygnał "coś nie działa"
-                Location above = portal.getPlateLocation().clone().add(0, 2.3, 0);
-                world.spawnParticle(Particle.SMOKE, above, 1, 0.1, 0.05, 0.1, 0.005);
+                // dodatkowy punkt "unoszący się" w górę kolumny w pętli - wrażenie energii płynącej przez portal
+                double travel = (angle / (Math.PI * 2)) * 4.0;
+                Location rising = portal.getPlateLocation().clone().add(0, 0.3 + travel, 0);
+                world.spawnParticle(Particle.END_ROD, rising, 3, 0.05, 0.05, 0.05, 0.0);
             }
         }
     }

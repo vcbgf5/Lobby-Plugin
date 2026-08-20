@@ -27,3 +27,16 @@ bossbar-ads:
     - "&e&lSKLEP &7- kup range na sklep.przyklad.pl"
     - "&b&lDISCORD &7- dolacz na discord.gg/przyklad"
     - "&a&lVOTE &7- zaglosuj komenda /vote i odbierz nagrody"
+
+# dodatkowa, NAPRAWDĘ klikalna reklama na czacie (boss bar wyżej nie obsługuje kliknięć w vanilla Minecraft)
+# każdy wpis ma "text" i albo "url" (otwiera link po kliknięciu) albo "command" (wykonuje komendę po kliknięciu)
+chat-ads:
+  enabled: true
+  interval-seconds: 300
+  messages:
+    - text: "&e&lSKLEP &7- kliknij, aby otworzyc sklep.przyklad.pl"
+      url: "https://sklep.przyklad.pl"
+    - text: "&b&lDISCORD &7- kliknij, aby dolaczyc"
+      url: "https://discord.gg/przyklad"
+    - text: "&a&lVOTE &7- kliknij, aby zaglosowac"
+      command: "/vote"
