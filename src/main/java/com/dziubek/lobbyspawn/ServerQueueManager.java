@@ -78,6 +78,15 @@ public class ServerQueueManager {
     }
 
     /**
+     * Pozycja gracza w kolejce liczona od 1 (1 = następny w kolejce), albo -1 gdy nie czeka.
+     * Publiczna wersja position() do użytku poza tą klasą (np. placeholder BetterHud).
+     */
+    public int getQueuePosition(String serverName, UUID uuid) {
+        int index = position(serverName, uuid);
+        return index >= 0 ? index + 1 : -1;
+    }
+
+    /**
      * Wywoływane cyklicznie - sprawdza czy na pełnych serwerach zwolniło się miejsce
      * i jeśli tak, wpuszcza pierwszego gracza z kolejki.
      */
@@ -100,6 +109,9 @@ public class ServerQueueManager {
             Player player = plugin.getServer().getPlayer(next);
             if (player != null && player.isOnline()) {
                 player.sendMessage("§aZwolniło się miejsce! Teleportacja na " + serverName + "...");
+                if (plugin.isBetterHudPresent()) {
+                    BetterHudBridge.showQueueSpotPopup(player);
+                }
                 plugin.sendToServer(player, serverName);
             }
             announcePositions(serverName, q);

@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Boss bar (BossBarAdsManager) nie obsługuje kliknięć w vanilla Minecraft - to ograniczenie
- * protokołu. Ta klasa rozgłasza rzadziej te same typy reklam jako prawdziwie klikalną
- * wiadomość na czacie (otwarcie linku albo wykonanie komendy).
+ * Boss bar/HUD nie obsługują kliknięć w vanilla Minecraft - to ograniczenie protokołu.
+ * Ta klasa rozgłasza rzadziej te same typy reklam jako prawdziwie klikalną wiadomość
+ * na czacie (otwarcie linku albo wykonanie komendy).
  */
 public class ChatAdsManager {
 

@@ -19,8 +19,8 @@ public class LobbySpawnPlugin extends JavaPlugin {
     private PlayerCountManager playerCounts;
     private PortalManager portals;
     private ServerQueueManager queue;
-    private BossBarAdsManager bossBarAds;
     private ChatAdsManager chatAds;
+    private boolean betterHudPresent;
 
     private NamespacedKey wandServerKey;
     private NamespacedKey wandMaxKey;
@@ -63,12 +63,16 @@ public class LobbySpawnPlugin extends JavaPlugin {
         int queueTicks = getConfig().getInt("queue-check-seconds", 3) * 20;
         getServer().getScheduler().runTaskTimer(this, () -> queue.tick(), 60L, queueTicks);
 
-        bossBarAds = new BossBarAdsManager(this);
-        getServer().getPluginManager().registerEvents(bossBarAds, this);
-        bossBarAds.start();
-
         chatAds = new ChatAdsManager(this);
         chatAds.start();
+
+        betterHudPresent = getServer().getPluginManager().getPlugin("BetterHud") != null;
+        if (betterHudPresent) {
+            BetterHudBridge.registerPlaceholders(this);
+            getServer().getPluginManager().registerEvents(new BetterHudAdsListener(), this);
+            getLogger().info("Wykryto BetterHud - reklamy/HUD beda obslugiwane przez niego (HUD '"
+                    + BetterHudBridge.ADS_HUD_NAME + "', popup '" + BetterHudBridge.QUEUE_SPOT_POPUP_NAME + "').");
+        }
 
         getServer().getScheduler().runTaskTimer(this, new PortalParticleTask(this), 20L, 2L);
 
@@ -77,15 +81,18 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
     /**
      * Przeładowuje config.yml i to co z niego zależy na żywo (bez restartu serwera):
-     * spawn, listę portali i bossbar-reklamy. Interwały pętli tick (portal-refresh-seconds,
+     * spawn, listę portali i reklamy na czacie. Interwały pętli tick (portal-refresh-seconds,
      * queue-check-seconds) wymagają nadal restartu, bo są ustawione raz przy planowaniu zadań.
      */
     public void reloadLobbyConfig() {
         reloadConfig();
         loadSpawnLocation();
         portals.loadAll();
-        bossBarAds.reload();
         chatAds.reload();
+    }
+
+    public boolean isBetterHudPresent() {
+        return betterHudPresent;
     }
 
     public boolean hasSpawn() {

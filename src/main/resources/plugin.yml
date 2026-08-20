@@ -4,6 +4,7 @@ version: 1.0.0
 api-version: '1.21'
 author: Dziubek
 description: Ustawiany spawn na Lobby + golden pressure plate jako launch pad (jak na Hypixel)
+softdepend: [BetterHud]
 
 commands:
   setspawnlobby:

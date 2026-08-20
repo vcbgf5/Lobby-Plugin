@@ -18,15 +18,12 @@ queue-check-seconds: 3
 # portale serwerów tworzone przez /addserverhologram - NIE edytuj ręcznie w trakcie działania serwera
 portals: {}
 
-bossbar-ads:
-  enabled: true
-  interval-seconds: 8
-  color: YELLOW
-  style: SEGMENTED_10
-  messages:
-    - "&e&lSKLEP &7- kup range na sklep.przyklad.pl"
-    - "&b&lDISCORD &7- dolacz na discord.gg/przyklad"
-    - "&a&lVOTE &7- zaglosuj komenda /vote i odbierz nagrody"
+# Reklamy/HUD nad hotbarem: jesli masz zainstalowany plugin BetterHud, ten plugin sam wykrywa
+# go przy starcie i rejestruje w nim placeholdery "lobbyspawn_queue_position_<serwer>" oraz
+# "lobbyspawn_portal_status_<serwer>" (online/offline) - wyglad HUD-a projektujesz w configu
+# samego BetterHud (plugins/BetterHud/...), definiujac tam HUD o nazwie "lobbyspawn_ads"
+# oraz popup o nazwie "lobbyspawn_queue_spot" (pokazywany gdy zwolni sie miejsce w kolejce).
+# Bez BetterHud te elementy po prostu sie nie pojawiaja - reszta pluginu dziala normalnie.
 
 # dodatkowa, NAPRAWDĘ klikalna reklama na czacie (boss bar wyżej nie obsługuje kliknięć w vanilla Minecraft)
 # każdy wpis ma "text" i albo "url" (otwiera link po kliknięciu) albo "command" (wykonuje komendę po kliknięciu)
