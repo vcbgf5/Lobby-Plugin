@@ -1,0 +1,28 @@
+name: LobbySpawn
+main: com.dziubek.lobbyspawn.LobbySpawnPlugin
+version: 1.0.0
+api-version: '1.21'
+author: Dziubek
+description: Ustawiany spawn na Lobby + golden pressure plate jako launch pad (jak na Hypixel)
+
+commands:
+  setspawnlobby:
+    description: Ustawia spawn Lobby w miejscu gdzie stoisz
+    usage: /setspawnlobby
+    permission: lobbyspawn.setspawn
+  addserverhologram:
+    description: Tworzy hologram + portal (status online/offline, liczba graczy) na złotej płytce
+    usage: /addserverhologram <nazwaServera> [maxGraczy]
+    permission: lobbyspawn.setspawn
+  removeportal:
+    description: Usuwa hologram/portal serwera
+    usage: /removeportal <nazwaServera>
+    permission: lobbyspawn.setspawn
+  fixmovement:
+    description: Resetuje predkosc chodzenia/latania gracza (naprawia zablokowany ruch po auth-pluginach)
+    usage: /fixmovement <gracz>
+
+permissions:
+  lobbyspawn.setspawn:
+    description: Pozwala ustawić spawn Lobby i zarządzać portalami
+    default: op

@@ -1,0 +1,29 @@
+# Moc launch pada (golden pressure plate)
+launchpad:
+  enabled: true
+  forward-power: 1.6
+  upward-power: 0.9
+  cooldown-ms: 500
+
+messages:
+  spawn-set: "&aSpawn Lobby ustawiony w tym miejscu!"
+  spawn-not-set: "&cSpawn Lobby nie jest jeszcze ustawiony. Użyj /setspawnlobby."
+
+# co ile sekund odświeżać status/liczbę graczy na hologramach portali
+portal-refresh-seconds: 5
+
+# co ile sekund sprawdzać czy zwolniło się miejsce dla graczy w kolejce
+queue-check-seconds: 3
+
+# portale/hologramy serwerów tworzone przez /addserverhologram - NIE edytuj ręcznie w trakcie działania serwera
+portals: {}
+
+bossbar-ads:
+  enabled: true
+  interval-seconds: 8
+  color: YELLOW
+  style: SEGMENTED_10
+  messages:
+    - "&e&lSKLEP &7- kup range na sklep.przyklad.pl"
+    - "&b&lDISCORD &7- dolacz na discord.gg/przyklad"
+    - "&a&lVOTE &7- zaglosuj komenda /vote i odbierz nagrody"

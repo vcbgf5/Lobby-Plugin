@@ -1,0 +1,90 @@
+package com.dziubek.lobbyspawn;
+
+import org.bukkit.entity.Player;
+
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
+import java.util.UUID;
+
+public class ServerQueueManager {
+
+    private final LobbySpawnPlugin plugin;
+
+    // nazwa serwera -> kolejka UUID graczy czekających
+    private final Map<String, Queue<UUID>> queues = new LinkedHashMap<>();
+    // nazwa serwera -> maksymalna liczba graczy (ustawiona przy tworzeniu portalu/hologramu)
+    private final Map<String, Integer> maxPlayers = new LinkedHashMap<>();
+
+    public ServerQueueManager(LobbySpawnPlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    public void setMaxPlayers(String serverName, int max) {
+        maxPlayers.put(serverName, max);
+    }
+
+    public boolean isInQueue(String serverName, UUID uuid) {
+        Queue<UUID> q = queues.get(serverName);
+        return q != null && q.contains(uuid);
+    }
+
+    public void enqueue(String serverName, Player player) {
+        Queue<UUID> q = queues.computeIfAbsent(serverName, k -> new LinkedList<>());
+        if (q.contains(player.getUniqueId())) {
+            player.sendMessage("§eJuż jesteś w kolejce do serwera " + serverName + " (pozycja " + (position(serverName, player.getUniqueId()) + 1) + ").");
+            return;
+        }
+        q.add(player.getUniqueId());
+        player.sendMessage("§eSerwer " + serverName + " jest pełny. Dodano Cię do kolejki (pozycja " + q.size() + ").");
+    }
+
+    public void removeFromAll(UUID uuid) {
+        for (Queue<UUID> q : queues.values()) {
+            q.remove(uuid);
+        }
+    }
+
+    private int position(String serverName, UUID uuid) {
+        Queue<UUID> q = queues.get(serverName);
+        if (q == null) {
+            return -1;
+        }
+        int i = 0;
+        for (UUID u : q) {
+            if (u.equals(uuid)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+
+    /**
+     * Wywoływane cyklicznie - sprawdza czy na pełnych serwerach zwolniło się miejsce
+     * i jeśli tak, wpuszcza pierwszego gracza z kolejki.
+     */
+    public void tick() {
+        for (Map.Entry<String, Queue<UUID>> entry : queues.entrySet()) {
+            String serverName = entry.getKey();
+            Queue<UUID> q = entry.getValue();
+            if (q.isEmpty()) {
+                continue;
+            }
+
+            int current = plugin.getPlayerCounts().getCount(serverName);
+            int max = maxPlayers.getOrDefault(serverName, 100);
+            if (current < 0 || current >= max) {
+                continue; // nadal pełny albo nie znamy stanu
+            }
+
+            UUID next = q.poll();
+            Player player = plugin.getServer().getPlayer(next);
+            if (player != null && player.isOnline()) {
+                player.sendMessage("§aZwolniło się miejsce! Teleportacja na " + serverName + "...");
+                plugin.sendToServer(player, serverName);
+            }
+        }
+    }
+}
