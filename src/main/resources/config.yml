@@ -18,12 +18,16 @@ queue-check-seconds: 3
 # portale serwerów tworzone przez /addserverhologram - NIE edytuj ręcznie w trakcie działania serwera
 portals: {}
 
-# Reklamy/HUD nad hotbarem: jesli masz zainstalowany plugin BetterHud, ten plugin sam wykrywa
-# go przy starcie i rejestruje w nim placeholdery "lobbyspawn_queue_position_<serwer>" oraz
-# "lobbyspawn_portal_status_<serwer>" (online/offline) - wyglad HUD-a projektujesz w configu
-# samego BetterHud (plugins/BetterHud/...), definiujac tam HUD o nazwie "lobbyspawn_ads"
-# oraz popup o nazwie "lobbyspawn_queue_spot" (pokazywany gdy zwolni sie miejsce w kolejce).
-# Bez BetterHud te elementy po prostu sie nie pojawiaja - reszta pluginu dziala normalnie.
+# Reklamy/HUD nad hotbarem: jesli masz zainstalowany plugin HUDEngine, ten plugin sam wykrywa
+# go przy starcie i rejestruje w nim wartosci "lobbyspawn:queue_position_<serwer>" oraz
+# "lobbyspawn:portal_status_<serwer>" (online/offline) dla kazdego skonfigurowanego portalu -
+# wyglad HUD-a projektujesz w configu samego HUDEngine (plugins/HUDEngine/huds/...), definiujac
+# tam HUD o kluczu "lobbyspawn:ads" (wlaczany na dolaczeniu gracza) oraz HUD o kluczu
+# "lobbyspawn:queue_spot" (pokazywany na queue-spot-popup-ticks, gdy zwolni sie miejsce w kolejce).
+# Bez HUDEngine te elementy po prostu sie nie pojawiaja - reszta pluginu dziala normalnie.
+
+# ile tickow (20 = 1 sekunda) ma byc widoczny popup "lobbyspawn:queue_spot" w HUDEngine
+queue-spot-popup-ticks: 100
 
 # dodatkowa, NAPRAWDĘ klikalna reklama na czacie (boss bar wyżej nie obsługuje kliknięć w vanilla Minecraft)
 # każdy wpis ma "text" i albo "url" (otwiera link po kliknięciu) albo "command" (wykonuje komendę po kliknięciu)

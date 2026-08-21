@@ -29,17 +29,11 @@
             <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-        <!-- BetterHud (opcjonalny softdepend) - tylko do kompilacji, plugin dziala tez bez niego -->
+        <!-- HUDEngine (opcjonalny softdepend) - tylko do kompilacji, plugin dziala tez bez niego -->
         <dependency>
-            <groupId>io.github.toxicity188</groupId>
-            <artifactId>BetterHud-api</artifactId>
-            <version>2.0.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.github.toxicity188</groupId>
-            <artifactId>BetterHud-bukkit-api</artifactId>
-            <version>2.0.0</version>
+            <groupId>io.github.nacvark</groupId>
+            <artifactId>hudengine-api</artifactId>
+            <version>1.0.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

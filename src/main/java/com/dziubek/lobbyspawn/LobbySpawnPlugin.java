@@ -1,5 +1,6 @@
 package com.dziubek.lobbyspawn;
 
+import io.github.nacvark.hudengine.api.HudEngineProvider;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -20,7 +21,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
     private PortalManager portals;
     private ServerQueueManager queue;
     private ChatAdsManager chatAds;
-    private boolean betterHudPresent;
+    private boolean hudEnginePresent;
 
     private NamespacedKey wandServerKey;
     private NamespacedKey wandMaxKey;
@@ -32,6 +33,9 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
         wandServerKey = new NamespacedKey(this, "lobbyspawn_wand_server");
         wandMaxKey = new NamespacedKey(this, "lobbyspawn_wand_max");
+
+        // Wykrywane przed portals.loadAll(), żeby placeholdery portali od razu się zarejestrowały w HUDEngine.
+        hudEnginePresent = HudEngineProvider.find().isPresent();
 
         playerCounts = new PlayerCountManager(this);
         portals = new PortalManager(this);
@@ -55,6 +59,12 @@ public class LobbySpawnPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new QueueQuitListener(this), this);
         getServer().getPluginManager().registerEvents(new WandInteractListener(this), this);
 
+        if (hudEnginePresent) {
+            getServer().getPluginManager().registerEvents(new HudEngineAdsListener(), this);
+            getLogger().info("Wykryto HUDEngine - reklamy/HUD beda obslugiwane przez niego (HUD '"
+                    + HudEngineBridge.ADS_HUD_KEY + "', popup '" + HudEngineBridge.QUEUE_SPOT_HUD_KEY + "').");
+        }
+
         portals.loadAll();
 
         int refreshTicks = getConfig().getInt("portal-refresh-seconds", 5) * 20;
@@ -65,14 +75,6 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
         chatAds = new ChatAdsManager(this);
         chatAds.start();
-
-        betterHudPresent = getServer().getPluginManager().getPlugin("BetterHud") != null;
-        if (betterHudPresent) {
-            BetterHudBridge.registerPlaceholders(this);
-            getServer().getPluginManager().registerEvents(new BetterHudAdsListener(), this);
-            getLogger().info("Wykryto BetterHud - reklamy/HUD beda obslugiwane przez niego (HUD '"
-                    + BetterHudBridge.ADS_HUD_NAME + "', popup '" + BetterHudBridge.QUEUE_SPOT_POPUP_NAME + "').");
-        }
 
         getServer().getScheduler().runTaskTimer(this, new PortalParticleTask(this), 20L, 2L);
 
@@ -91,8 +93,8 @@ public class LobbySpawnPlugin extends JavaPlugin {
         chatAds.reload();
     }
 
-    public boolean isBetterHudPresent() {
-        return betterHudPresent;
+    public boolean isHudEnginePresent() {
+        return hudEnginePresent;
     }
 
     public boolean hasSpawn() {

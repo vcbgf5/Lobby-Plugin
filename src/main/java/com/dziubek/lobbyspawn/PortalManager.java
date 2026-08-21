@@ -52,6 +52,10 @@ public class PortalManager {
             portals.put(id, portal);
             plugin.getQueue().setMaxPlayers(targetServer, maxPlayers);
         }
+
+        if (plugin.isHudEnginePresent()) {
+            HudEngineBridge.registerPortalValues(plugin, portals.values());
+        }
     }
 
     /**
