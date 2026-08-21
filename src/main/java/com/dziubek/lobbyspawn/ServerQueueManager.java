@@ -40,6 +40,9 @@ public class ServerQueueManager {
         }
         q.add(player.getUniqueId());
         player.sendMessage("§eSerwer " + serverName + " jest pełny. Dodano Cię do kolejki (pozycja " + q.size() + "). §7Wpisz /leavequeue aby zrezygnować.");
+        if (plugin.isHudEnginePresent()) {
+            HudEngineBridge.showQueueStatusHud(player);
+        }
     }
 
     /**
@@ -52,6 +55,9 @@ public class ServerQueueManager {
             if (q.remove(player.getUniqueId())) {
                 removed = true;
             }
+        }
+        if (removed && plugin.isHudEnginePresent() && getActiveQueueServer(player.getUniqueId()) == null) {
+            HudEngineBridge.hideQueueStatusHud(player);
         }
         return removed;
     }
@@ -87,6 +93,20 @@ public class ServerQueueManager {
     }
 
     /**
+     * Pierwsza kolejka (dowolny serwer), w jakiej aktualnie czeka gracz, albo null gdy w żadnej.
+     * Gracz zwykle jest w co najwyżej jednej - używane przez HUD status kolejki (widget globalny,
+     * nie per-portal).
+     */
+    public String getActiveQueueServer(UUID uuid) {
+        for (Map.Entry<String, Queue<UUID>> entry : queues.entrySet()) {
+            if (entry.getValue().contains(uuid)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Wywoływane cyklicznie - sprawdza czy na pełnych serwerach zwolniło się miejsce
      * i jeśli tak, wpuszcza pierwszego gracza z kolejki.
      */
@@ -112,6 +132,9 @@ public class ServerQueueManager {
                 if (plugin.isHudEnginePresent()) {
                     int ticks = plugin.getConfig().getInt("queue-spot-popup-ticks", 100);
                     HudEngineBridge.showQueueSpotPopup(player, ticks);
+                    if (getActiveQueueServer(next) == null) {
+                        HudEngineBridge.hideQueueStatusHud(player);
+                    }
                 }
                 plugin.sendToServer(player, serverName);
             }

@@ -61,8 +61,11 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
         if (hudEnginePresent) {
             getServer().getPluginManager().registerEvents(new HudEngineAdsListener(), this);
+            getServer().getPluginManager().registerEvents(new HudAutoHideListener(this), this);
+            HudEngineBridge.registerGlobalValues(this);
             getLogger().info("Wykryto HUDEngine - reklamy/HUD beda obslugiwane przez niego (HUD '"
-                    + HudEngineBridge.ADS_HUD_KEY + "', popup '" + HudEngineBridge.QUEUE_SPOT_HUD_KEY + "').");
+                    + HudEngineBridge.ADS_HUD_KEY + "', popup '" + HudEngineBridge.QUEUE_SPOT_HUD_KEY
+                    + "', status kolejki '" + HudEngineBridge.QUEUE_STATUS_HUD_KEY + "').");
         }
 
         portals.loadAll();
