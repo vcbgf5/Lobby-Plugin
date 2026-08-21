@@ -75,6 +75,10 @@ public class LaunchPadListener implements Listener {
         }
 
         player.sendMessage("§aTeleportacja na " + portal.getDisplayName().replaceAll("&.", "") + "...");
+        if (plugin.isHudEnginePresent()) {
+            int ticks = plugin.getConfig().getInt("teleport-popup-ticks", 40);
+            HudEngineBridge.showTeleportNotice(player, ticks);
+        }
         // małe opóźnienie, żeby gracz najpierw poczuł wyrzut w powietrze zanim proxy go przełączy
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (player.isOnline()) {

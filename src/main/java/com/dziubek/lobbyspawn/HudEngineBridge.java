@@ -14,7 +14,8 @@ import java.util.Map;
  * z jej metod - a wołamy je wyłącznie gdy LobbySpawnPlugin.isHudEnginePresent() zwraca true,
  * więc na serwerze bez zainstalowanego HUDEngine nic się nie wysypuje (brak NoClassDefFoundError).
  *
- * Klucze HUD-ów ("lobbyspawn_ads" / "lobbyspawn_queue_spot" / "lobbyspawn_queue_status") trzeba
+ * Klucze HUD-ów ("lobbyspawn_ads" / "lobbyspawn_queue_spot" / "lobbyspawn_queue_status" /
+ * "lobbyspawn_teleport") trzeba
  * zdefiniować po stronie configu samego HUDEngine (plugins/HUDEngine/huds/...) - tam projektuje
  * się wygląd. Jeśli taki HUD nie istnieje w skompilowanym configu HUDEngine, show()/showFor() po
  * prostu zwraca false i nic się nie dzieje.
@@ -31,6 +32,7 @@ public final class HudEngineBridge {
     public static final String ADS_HUD_KEY = "lobbyspawn_ads";
     public static final String QUEUE_SPOT_HUD_KEY = "lobbyspawn_queue_spot";
     public static final String QUEUE_STATUS_HUD_KEY = "lobbyspawn_queue_status";
+    public static final String TELEPORT_HUD_KEY = "lobbyspawn_teleport";
 
     // co ile ms zmienia sie tekst reklamy na HUD-zie (osobno od interwalu reklam na czacie -
     // tu chodzi o wrazenie "animacji", wiec krocej)
@@ -120,5 +122,13 @@ public final class HudEngineBridge {
 
     public static void hideQueueStatusHud(Player player) {
         HudEngineProvider.find().ifPresent(hud -> hud.player(player).hide(QUEUE_STATUS_HUD_KEY));
+    }
+
+    public static void showTeleportNotice(Player player, int ticks) {
+        HudEngineProvider.find().ifPresent(hud -> hud.player(player).showFor(TELEPORT_HUD_KEY, ticks));
+    }
+
+    public static void hideTeleportNotice(Player player) {
+        HudEngineProvider.find().ifPresent(hud -> hud.player(player).hide(TELEPORT_HUD_KEY));
     }
 }

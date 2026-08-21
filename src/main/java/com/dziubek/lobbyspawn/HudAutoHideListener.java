@@ -26,6 +26,7 @@ public class HudAutoHideListener implements Listener {
         }
         HudEngineBridge.hideAdsHud(player);
         HudEngineBridge.hideQueueStatusHud(player);
+        HudEngineBridge.hideTeleportNotice(player);
     }
 
     @EventHandler
