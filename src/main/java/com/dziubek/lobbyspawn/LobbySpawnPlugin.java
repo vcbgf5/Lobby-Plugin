@@ -21,10 +21,13 @@ public class LobbySpawnPlugin extends JavaPlugin {
     private PortalManager portals;
     private ServerQueueManager queue;
     private ChatAdsManager chatAds;
+    private ServerSelectorMenu serverSelectorMenu;
+    private HotbarItemListener hotbarItems;
     private boolean hudEnginePresent;
 
     private NamespacedKey wandServerKey;
     private NamespacedKey wandMaxKey;
+    private NamespacedKey hotbarItemKey;
 
     @Override
     public void onEnable() {
@@ -33,6 +36,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
         wandServerKey = new NamespacedKey(this, "lobbyspawn_wand_server");
         wandMaxKey = new NamespacedKey(this, "lobbyspawn_wand_max");
+        hotbarItemKey = new NamespacedKey(this, "lobbyspawn_hotbar_item");
 
         // Wykrywane przed portals.loadAll(), żeby placeholdery portali od razu się zarejestrowały w HUDEngine.
         hudEnginePresent = HudEngineProvider.find().isPresent();
@@ -40,6 +44,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
         playerCounts = new PlayerCountManager(this);
         portals = new PortalManager(this);
         queue = new ServerQueueManager(this);
+        serverSelectorMenu = new ServerSelectorMenu(this);
 
         // "BungeeCord" - do teleportacji graczy między serwerami (Connect)
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
@@ -58,6 +63,13 @@ public class LobbySpawnPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new LaunchPadListener(this), this);
         getServer().getPluginManager().registerEvents(new QueueQuitListener(this), this);
         getServer().getPluginManager().registerEvents(new WandInteractListener(this), this);
+
+        hotbarItems = new HotbarItemListener(this);
+        getServer().getPluginManager().registerEvents(hotbarItems, this);
+        // /reload pluginu (nie serwera) - dogrywa itemy graczom, którzy już byli online.
+        for (Player online : getServer().getOnlinePlayers()) {
+            hotbarItems.giveItems(online);
+        }
 
         if (hudEnginePresent) {
             getServer().getPluginManager().registerEvents(new HudEngineAdsListener(), this);
@@ -181,5 +193,13 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
     public NamespacedKey getWandMaxKey() {
         return wandMaxKey;
+    }
+
+    public NamespacedKey getHotbarItemKey() {
+        return hotbarItemKey;
+    }
+
+    public ServerSelectorMenu getServerSelectorMenu() {
+        return serverSelectorMenu;
     }
 }
