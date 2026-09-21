@@ -44,6 +44,7 @@ public class BanCheckManager implements PluginMessageListener {
 
     private final LobbySpawnPlugin plugin;
     private final Map<String, BanInfo> results = new ConcurrentHashMap<>();
+    private final Map<String, Boolean> closedServers = new ConcurrentHashMap<>();
 
     public BanCheckManager(LobbySpawnPlugin plugin) {
         this.plugin = plugin;
@@ -74,6 +75,11 @@ public class BanCheckManager implements PluginMessageListener {
         return results.get(key(player.getUniqueId(), targetServer));
     }
 
+    /** Czy dany serwer jest aktualnie zamknięty (/shutdown - "prace techniczne"). Domyślnie false, dopóki nie przyjdzie odpowiedź. */
+    public boolean isClosed(String targetServer) {
+        return closedServers.getOrDefault(targetServer, false);
+    }
+
     @Override
     public void onPluginMessageReceived(String channel, Player player, byte[] message) {
         if (!channel.equals(CHANNEL)) {
@@ -86,13 +92,14 @@ public class BanCheckManager implements PluginMessageListener {
             String key = key(player.getUniqueId(), server);
             if (!banned) {
                 results.remove(key);
-                return;
+            } else {
+                String scope = in.readUTF();
+                String reason = in.readUTF();
+                String by = in.readUTF();
+                long expiresAt = in.readLong();
+                results.put(key, new BanInfo(scope, reason, by, expiresAt));
             }
-            String scope = in.readUTF();
-            String reason = in.readUTF();
-            String by = in.readUTF();
-            long expiresAt = in.readLong();
-            results.put(key, new BanInfo(scope, reason, by, expiresAt));
+            closedServers.put(server, in.readBoolean());
         } catch (IOException e) {
             plugin.getLogger().warning("Blad odczytu odpowiedzi o banie: " + e.getMessage());
         }
@@ -111,6 +118,14 @@ public class BanCheckManager implements PluginMessageListener {
                 + "§7Czas: §f" + time + "\n"
                 + "§7Przez: §f" + info.by + "\n"
                 + "§7Powód: §f" + info.reason;
+    }
+
+    /** "Serwer zamknięty (prace techniczne)" - do wiadomości dla gracza, gdy cel jest w trakcie /shutdown. */
+    public static String formatClosedMessage(String server) {
+        return "§4§lSERWER ZAMKNIĘTY\n"
+                + "§7Serwer: §f" + server + "\n"
+                + "§7Powód: §fPrace techniczne\n"
+                + "§7Spróbuj ponownie za chwilę.";
     }
 
     private static String formatDuration(long expiresAt) {

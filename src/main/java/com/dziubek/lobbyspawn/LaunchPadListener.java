@@ -66,6 +66,12 @@ public class LaunchPadListener implements Listener {
             return;
         }
 
+        if (plugin.getBanChecks().isClosed(target)) {
+            launch(player, true); // prace techniczne - wystrzel do TYŁU, jak przy offline
+            player.sendMessage(BanCheckManager.formatClosedMessage(target));
+            return;
+        }
+
         if (!plugin.getPlayerCounts().isOnline(target)) {
             launch(player, true); // offline - wystrzel do TYŁU
             player.sendMessage("§cSerwer '" + target + "' jest obecnie niedostępny (offline).");

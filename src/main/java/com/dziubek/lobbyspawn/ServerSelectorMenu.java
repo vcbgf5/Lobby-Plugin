@@ -99,11 +99,12 @@ public class ServerSelectorMenu {
         int count = plugin.getPlayerCounts().getCount(target);
         int max = plugin.getMenuServers().getEffectiveMaxPlayers(server);
         BanCheckManager.BanInfo ban = plugin.getBanChecks().getBan(viewer, target);
+        boolean closed = ban == null && plugin.getBanChecks().isClosed(target);
 
-        ItemStack item = new ItemStack(ban != null ? Material.BARRIER : (online ? server.getIcon() : Material.GRAY_DYE));
+        ItemStack item = new ItemStack(ban != null ? Material.BARRIER : (closed ? Material.ANVIL : (online ? server.getIcon() : Material.GRAY_DYE)));
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', server.getDisplayName()));
-        meta.setEnchantmentGlintOverride(online && ban == null);
+        meta.setEnchantmentGlintOverride(online && ban == null && !closed);
 
         List<String> lore = new ArrayList<>();
         List<String> description = server.getDescription();
@@ -115,6 +116,10 @@ public class ServerSelectorMenu {
         }
         if (ban != null) {
             for (String line : BanCheckManager.formatBanMessage(ban).split("\n")) {
+                lore.add(line);
+            }
+        } else if (closed) {
+            for (String line : BanCheckManager.formatClosedMessage(target).split("\n")) {
                 lore.add(line);
             }
         } else if (online) {
@@ -144,6 +149,11 @@ public class ServerSelectorMenu {
         BanCheckManager.BanInfo ban = plugin.getBanChecks().getBan(player, target);
         if (ban != null) {
             player.sendMessage(BanCheckManager.formatBanMessage(ban));
+            return;
+        }
+
+        if (plugin.getBanChecks().isClosed(target)) {
+            player.sendMessage(BanCheckManager.formatClosedMessage(target));
             return;
         }
 
