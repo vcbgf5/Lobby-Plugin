@@ -56,7 +56,7 @@ public class ServerSelectorMenu {
 
         List<Integer> slots = centeredSlots(servers.size());
         for (int i = 0; i < servers.size() && i < slots.size(); i++) {
-            inventory.setItem(slots.get(i), buildItem(servers.get(i)));
+            inventory.setItem(slots.get(i), buildItem(servers.get(i), player));
         }
 
         player.openInventory(inventory);
@@ -93,16 +93,17 @@ public class ServerSelectorMenu {
         return filler;
     }
 
-    private ItemStack buildItem(MenuServerData server) {
+    private ItemStack buildItem(MenuServerData server, Player viewer) {
         String target = server.getTargetServer();
         boolean online = plugin.getPlayerCounts().isOnline(target);
         int count = plugin.getPlayerCounts().getCount(target);
         int max = plugin.getMenuServers().getEffectiveMaxPlayers(server);
+        BanCheckManager.BanInfo ban = plugin.getBanChecks().getBan(viewer, target);
 
-        ItemStack item = new ItemStack(online ? server.getIcon() : Material.GRAY_DYE);
+        ItemStack item = new ItemStack(ban != null ? Material.BARRIER : (online ? server.getIcon() : Material.GRAY_DYE));
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', server.getDisplayName()));
-        meta.setEnchantmentGlintOverride(online);
+        meta.setEnchantmentGlintOverride(online && ban == null);
 
         List<String> lore = new ArrayList<>();
         List<String> description = server.getDescription();
@@ -112,7 +113,11 @@ public class ServerSelectorMenu {
         if (!description.isEmpty()) {
             lore.add("");
         }
-        if (online) {
+        if (ban != null) {
+            for (String line : BanCheckManager.formatBanMessage(ban).split("\n")) {
+                lore.add(line);
+            }
+        } else if (online) {
             lore.add("§7Status: §aOnline");
             lore.add("§7Gracze: §f" + Math.max(0, count) + "§7/§f" + max);
             lore.add("");
@@ -128,13 +133,19 @@ public class ServerSelectorMenu {
         return item;
     }
 
-    /** Kliknięcie w serwer w GUI - ta sama logika co launch pad (kolejka gdy pełny, offline = odmowa). */
+    /** Kliknięcie w serwer w GUI - ban ma pierwszeństwo, potem offline, potem kolejka gdy pełny. */
     public void handleClick(Player player, ItemStack clicked) {
         String target = readTarget(clicked);
         if (target == null) {
             return;
         }
         player.closeInventory();
+
+        BanCheckManager.BanInfo ban = plugin.getBanChecks().getBan(player, target);
+        if (ban != null) {
+            player.sendMessage(BanCheckManager.formatBanMessage(ban));
+            return;
+        }
 
         if (!plugin.getPlayerCounts().isOnline(target)) {
             player.sendMessage("§cSerwer '" + target + "' jest obecnie niedostępny (offline).");

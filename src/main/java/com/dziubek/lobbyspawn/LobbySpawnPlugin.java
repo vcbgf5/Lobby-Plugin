@@ -12,12 +12,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class LobbySpawnPlugin extends JavaPlugin {
 
     private Location spawnLocation;
 
     private PlayerCountManager playerCounts;
+    private BanCheckManager banChecks;
     private PortalManager portals;
     private ServerQueueManager queue;
     private ChatAdsManager chatAds;
@@ -43,6 +46,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
         hudEnginePresent = HudEngineProvider.find().isPresent();
 
         playerCounts = new PlayerCountManager(this);
+        banChecks = new BanCheckManager(this);
         portals = new PortalManager(this);
         queue = new ServerQueueManager(this);
         menuServers = new MenuServerManager(this);
@@ -53,6 +57,9 @@ public class LobbySpawnPlugin extends JavaPlugin {
         // "lobbyspawn:query" - prawdziwy status serwera (ping) od proxy, patrz PlayerCountManager
         getServer().getMessenger().registerOutgoingPluginChannel(this, "lobbyspawn:query");
         getServer().getMessenger().registerIncomingPluginChannel(this, "lobbyspawn:query", playerCounts);
+        // "banmanager:query" - czy gracz ma bana (plugin BanManager na proxy), patrz BanCheckManager
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "banmanager:query");
+        getServer().getMessenger().registerIncomingPluginChannel(this, "banmanager:query", banChecks);
 
         getCommand("setspawnlobby").setExecutor(new SetSpawnCommand(this));
         getCommand("addserverhologram").setExecutor(new AddServerHologramCommand(this));
@@ -90,6 +97,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
         getServer().getScheduler().runTaskTimer(this, () -> {
             portals.refreshPlayerCounts();
             menuServers.refreshPlayerCounts();
+            banChecks.refreshAll(allTargetServers());
         }, 40L, refreshTicks);
 
         int queueTicks = getConfig().getInt("queue-check-seconds", 3) * 20;
@@ -184,6 +192,22 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
     public PlayerCountManager getPlayerCounts() {
         return playerCounts;
+    }
+
+    public BanCheckManager getBanChecks() {
+        return banChecks;
+    }
+
+    /** Suma docelowych serwerów z fizycznych portali i z menu kompasu - do cyklicznego sprawdzania banów. */
+    private Set<String> allTargetServers() {
+        Set<String> set = new LinkedHashSet<>();
+        for (PortalData portal : portals.getPortals()) {
+            set.add(portal.getTargetServer());
+        }
+        for (MenuServerData server : menuServers.getServers()) {
+            set.add(server.getTargetServer());
+        }
+        return set;
     }
 
     public PortalManager getPortals() {

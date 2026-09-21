@@ -59,6 +59,13 @@ public class LaunchPadListener implements Listener {
 
         String target = portal.getTargetServer();
 
+        BanCheckManager.BanInfo ban = plugin.getBanChecks().getBan(player, target);
+        if (ban != null) {
+            launch(player, true); // zbanowany - wystrzel do TYŁU, jak przy offline
+            player.sendMessage(BanCheckManager.formatBanMessage(ban));
+            return;
+        }
+
         if (!plugin.getPlayerCounts().isOnline(target)) {
             launch(player, true); // offline - wystrzel do TYŁU
             player.sendMessage("§cSerwer '" + target + "' jest obecnie niedostępny (offline).");
