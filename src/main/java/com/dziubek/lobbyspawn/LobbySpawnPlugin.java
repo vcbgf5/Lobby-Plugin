@@ -21,6 +21,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
     private PortalManager portals;
     private ServerQueueManager queue;
     private ChatAdsManager chatAds;
+    private MenuServerManager menuServers;
     private ServerSelectorMenu serverSelectorMenu;
     private HotbarItemListener hotbarItems;
     private boolean hudEnginePresent;
@@ -44,6 +45,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
         playerCounts = new PlayerCountManager(this);
         portals = new PortalManager(this);
         queue = new ServerQueueManager(this);
+        menuServers = new MenuServerManager(this);
         serverSelectorMenu = new ServerSelectorMenu(this);
 
         // "BungeeCord" - do teleportacji graczy między serwerami (Connect)
@@ -82,9 +84,13 @@ public class LobbySpawnPlugin extends JavaPlugin {
         }
 
         portals.loadAll();
+        menuServers.loadAll();
 
         int refreshTicks = getConfig().getInt("portal-refresh-seconds", 5) * 20;
-        getServer().getScheduler().runTaskTimer(this, () -> portals.refreshPlayerCounts(), 40L, refreshTicks);
+        getServer().getScheduler().runTaskTimer(this, () -> {
+            portals.refreshPlayerCounts();
+            menuServers.refreshPlayerCounts();
+        }, 40L, refreshTicks);
 
         int queueTicks = getConfig().getInt("queue-check-seconds", 3) * 20;
         getServer().getScheduler().runTaskTimer(this, () -> queue.tick(), 60L, queueTicks);
@@ -106,6 +112,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
         reloadConfig();
         loadSpawnLocation();
         portals.loadAll();
+        menuServers.loadAll();
         chatAds.reload();
     }
 
@@ -201,5 +208,9 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
     public ServerSelectorMenu getServerSelectorMenu() {
         return serverSelectorMenu;
+    }
+
+    public MenuServerManager getMenuServers() {
+        return menuServers;
     }
 }

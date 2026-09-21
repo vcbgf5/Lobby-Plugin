@@ -15,8 +15,35 @@ portal-refresh-seconds: 5
 # co ile sekund sprawdzać czy zwolniło się miejsce dla graczy w kolejce
 queue-check-seconds: 3
 
-# portale serwerów tworzone przez /addserverhologram - NIE edytuj ręcznie w trakcie działania serwera
+# portale serwerów tworzone przez /addserverhologram (fizyczne złote płytki) - NIE edytuj
+# ręcznie w trakcie działania serwera
 portals: {}
+
+# Serwery pokazywane w GUI kompasu "Wybierz serwer" (hotbar) - NIEZALEŻNE od portali wyżej,
+# gracz nie musi stać przy żadnym bloku. Status/liczba graczy i tak biorą się na żywo z tego
+# samego pingu przez proxy. Możesz edytować ręcznie (display-name/description wspierają kolory
+# przez &), icon to dowolny Material (np. GRASS_BLOCK, DIAMOND_SWORD) - reload przez /reloadlobby.
+menu-servers:
+  ecosmp:
+    display-name: "&a&lEcoSMP"
+    target-server: "EcoSMP"
+    max-players: 100
+    icon: GRASS_BLOCK
+    description:
+      - "&7Survival z ekonomią, home'ami"
+      - "&7i handlem między graczami."
+      - ""
+      - "&eDołącz i zacznij budować!"
+  boxpvp:
+    display-name: "&c&lBoxPvP"
+    target-server: "BoxPvP"
+    max-players: 100
+    icon: DIAMOND_SWORD
+    description:
+      - "&7Box PvP - pojedynki, generatory,"
+      - "&7skrzynki i eventy w jednym miejscu."
+      - ""
+      - "&eDołącz do walki!"
 
 # Reklamy/HUD nad hotbarem: jesli masz zainstalowany plugin HUDEngine, ten plugin sam wykrywa
 # go przy starcie i rejestruje w nim wartosci "lobbyspawn:queue_position_<serwer>" oraz

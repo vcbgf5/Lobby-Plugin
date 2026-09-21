@@ -17,14 +17,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GUI wyboru serwera otwierane kompasem z hotbaru (styl Hypixela) - zamiast tylko fizycznych
- * portali. Dane (online/offline, liczba graczy) biorą się z tego samego źródła co hologramy
- * portali (PlayerCountManager, prawdziwy ping z proxy), więc są tak samo "na żywo" jak one -
- * odświeżają się co portal-refresh-seconds razem z resztą pluginu.
+ * GUI wyboru serwera otwierane kompasem z hotbaru (styl Hypixela). Zawsze 3 rzędy (27 slotów) -
+ * serwery są wyśrodkowane zamiast upchane od lewej w jednej linii, reszta wypełniona szklaną
+ * "ramką" dla wyglądu. Lista serwerów, ich ikony i opisy pochodzą z MenuServerManager
+ * (config.yml, menu-servers) - liczba graczy/status na żywo z PlayerCountManager (ten sam ping,
+ * co hologramy portali).
  */
 public class ServerSelectorMenu {
 
     private static final String TITLE = "§8§lWybierz serwer";
+    private static final int ROWS = 3;
+    private static final int SIZE = ROWS * 9;
+    private static final int COLUMNS_USABLE = 7; // kolumny 1..7 - kolumny 0 i 8 to ramka
 
     private final LobbySpawnPlugin plugin;
     private final NamespacedKey targetKey;
@@ -35,40 +39,79 @@ public class ServerSelectorMenu {
     }
 
     public void open(Player player) {
-        List<PortalData> portals = new ArrayList<>(plugin.getPortals().getPortals());
-        if (portals.isEmpty()) {
-            player.sendMessage("§cBrak skonfigurowanych serwerów (użyj /addserverhologram).");
+        List<MenuServerData> servers = new ArrayList<>(plugin.getMenuServers().getServers());
+        if (servers.isEmpty()) {
+            player.sendMessage("§cBrak skonfigurowanych serwerów.");
             return;
         }
 
-        int size = Math.min(54, Math.max(9, ((portals.size() + 8) / 9) * 9));
         MenuHolder holder = new MenuHolder();
-        Inventory inventory = Bukkit.createInventory(holder, size, LegacyComponentSerializer.legacySection().deserialize(TITLE));
+        Inventory inventory = Bukkit.createInventory(holder, SIZE, LegacyComponentSerializer.legacySection().deserialize(TITLE));
         holder.setInventory(inventory);
 
-        int slot = 0;
-        for (PortalData portal : portals) {
-            if (slot >= size) {
-                break;
-            }
-            inventory.setItem(slot++, buildItem(portal));
+        ItemStack filler = buildFiller();
+        for (int i = 0; i < SIZE; i++) {
+            inventory.setItem(i, filler);
+        }
+
+        List<Integer> slots = centeredSlots(servers.size());
+        for (int i = 0; i < servers.size() && i < slots.size(); i++) {
+            inventory.setItem(slots.get(i), buildItem(servers.get(i)));
         }
 
         player.openInventory(inventory);
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.6f, 1.2f);
     }
 
-    private ItemStack buildItem(PortalData portal) {
-        String target = portal.getTargetServer();
+    /**
+     * Rozkłada `count` itemów na siatce ROWS x COLUMNS_USABLE, wyśrodkowanych w pionie i w
+     * poziomie - dla 1-7 serwerów wszystkie lądują w środkowym rzędzie; więcej - rozkłada się
+     * równo na kolejne rzędy (maksymalnie ROWS * COLUMNS_USABLE serwerów naraz).
+     */
+    private List<Integer> centeredSlots(int count) {
+        int rowsNeeded = Math.max(1, Math.min(ROWS, (count + COLUMNS_USABLE - 1) / COLUMNS_USABLE));
+        int base = count / rowsNeeded;
+        int extra = count % rowsNeeded;
+        int startRow = (ROWS - rowsNeeded) / 2;
+
+        List<Integer> slots = new ArrayList<>();
+        for (int r = 0; r < rowsNeeded; r++) {
+            int itemsInRow = base + (r < extra ? 1 : 0);
+            int startCol = 1 + (COLUMNS_USABLE - itemsInRow) / 2;
+            for (int c = 0; c < itemsInRow && slots.size() < count; c++) {
+                slots.add((startRow + r) * 9 + startCol + c);
+            }
+        }
+        return slots;
+    }
+
+    private ItemStack buildFiller() {
+        ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta meta = filler.getItemMeta();
+        meta.setDisplayName(" ");
+        filler.setItemMeta(meta);
+        return filler;
+    }
+
+    private ItemStack buildItem(MenuServerData server) {
+        String target = server.getTargetServer();
         boolean online = plugin.getPlayerCounts().isOnline(target);
         int count = plugin.getPlayerCounts().getCount(target);
-        int max = plugin.getPortals().getEffectiveMaxPlayers(portal);
+        int max = plugin.getMenuServers().getEffectiveMaxPlayers(server);
 
-        ItemStack item = new ItemStack(online ? Material.COMPASS : Material.GRAY_DYE);
+        ItemStack item = new ItemStack(online ? server.getIcon() : Material.GRAY_DYE);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', portal.getDisplayName()));
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', server.getDisplayName()));
+        meta.setEnchantmentGlintOverride(online);
 
         List<String> lore = new ArrayList<>();
+        List<String> description = server.getDescription();
+        for (String line : description) {
+            lore.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        if (!description.isEmpty()) {
+            lore.add("");
+        }
         if (online) {
             lore.add("§7Status: §aOnline");
             lore.add("§7Gracze: §f" + Math.max(0, count) + "§7/§f" + max);
@@ -119,9 +162,9 @@ public class ServerSelectorMenu {
     }
 
     private int effectiveMaxFor(String targetServer) {
-        for (PortalData portal : plugin.getPortals().getPortals()) {
-            if (portal.getTargetServer().equals(targetServer)) {
-                return plugin.getPortals().getEffectiveMaxPlayers(portal);
+        for (MenuServerData server : plugin.getMenuServers().getServers()) {
+            if (server.getTargetServer().equals(targetServer)) {
+                return plugin.getMenuServers().getEffectiveMaxPlayers(server);
             }
         }
         return 100;
