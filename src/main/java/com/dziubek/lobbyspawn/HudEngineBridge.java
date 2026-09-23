@@ -57,6 +57,21 @@ public final class HudEngineBridge {
                 // [lobbyspawn:portal_status_<serwer>] - "online" albo "offline"
                 hud.values().register("lobbyspawn:portal_status_" + server, player ->
                         plugin.getPlayerCounts().isOnline(server) ? "online" : "offline");
+
+                // [lobbyspawn:portal_notice_<serwer>] - pusty string normalnie, albo krótki tekst
+                // "zbanowany"/"prace techniczne" gdy dotyczy TEGO gracza - trzeba dopisać osobną
+                // linię w layoucie HUDEngine (plugins/HUDEngine/huds/...), żeby się pokazywała,
+                // bo to nowy klucz, nie podmiana istniejącego.
+                hud.values().register("lobbyspawn:portal_notice_" + server, player -> {
+                    BanCheckManager.BanInfo ban = plugin.getBanChecks().getBan(player, server);
+                    if (ban != null) {
+                        return "§4§lZBANOWANY";
+                    }
+                    if (plugin.getBanChecks().isClosed(server)) {
+                        return "§6§lPRACE TECHNICZNE";
+                    }
+                    return "";
+                });
             }
         });
     }
