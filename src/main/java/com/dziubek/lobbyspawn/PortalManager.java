@@ -96,6 +96,7 @@ public class PortalManager {
         plugin.saveConfig();
 
         loadAll();
+        plugin.getPortalHolograms().reload();
     }
 
     public boolean removePortal(String id) {
@@ -106,6 +107,7 @@ public class PortalManager {
         cfg.set("portals." + id, null);
         plugin.saveConfig();
         portals.remove(id);
+        plugin.getPortalHolograms().remove(id);
         return true;
     }
 

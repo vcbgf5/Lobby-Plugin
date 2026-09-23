@@ -4,7 +4,7 @@ version: 1.0.0
 api-version: '1.21'
 author: Dziubek
 description: Ustawiany spawn na Lobby + golden pressure plate jako launch pad (jak na Hypixel)
-softdepend: [HUDEngine]
+softdepend: [HUDEngine, DecentHolograms]
 
 commands:
   setspawnlobby:
@@ -28,6 +28,10 @@ commands:
   reloadlobby:
     description: Przeładowuje config.yml pluginu na żywo (spawn, portale, bossbar)
     usage: /reloadlobby
+    permission: lobbyspawn.reload
+  reloadholograms:
+    description: Usuwa i stawia od nowa hologramy portali (DecentHolograms)
+    usage: /reloadholograms
     permission: lobbyspawn.reload
 
 permissions:

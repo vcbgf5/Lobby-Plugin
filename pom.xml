@@ -20,6 +20,10 @@
             <id>papermc</id>
             <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -34,6 +38,13 @@
             <groupId>io.github.nacvark</groupId>
             <artifactId>hudengine-api</artifactId>
             <version>1.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- DecentHolograms (opcjonalny softdepend) - tylko do kompilacji, prawdziwe hologramy portali -->
+        <dependency>
+            <groupId>com.github.decentsoftware-eu</groupId>
+            <artifactId>decentholograms</artifactId>
+            <version>2.8.6</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

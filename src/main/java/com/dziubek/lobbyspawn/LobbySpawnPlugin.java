@@ -22,6 +22,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
     private PlayerCountManager playerCounts;
     private BanCheckManager banChecks;
     private PortalManager portals;
+    private PortalHologramManager portalHolograms;
     private ServerQueueManager queue;
     private ChatAdsManager chatAds;
     private MenuServerManager menuServers;
@@ -48,6 +49,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
         playerCounts = new PlayerCountManager(this);
         banChecks = new BanCheckManager(this);
         portals = new PortalManager(this);
+        portalHolograms = new PortalHologramManager(this);
         queue = new ServerQueueManager(this);
         menuServers = new MenuServerManager(this);
         serverSelectorMenu = new ServerSelectorMenu(this);
@@ -67,6 +69,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
         getCommand("fixmovement").setExecutor(new FixMovementCommand());
         getCommand("leavequeue").setExecutor(new LeaveQueueCommand(this));
         getCommand("reloadlobby").setExecutor(new ReloadLobbyCommand(this));
+        getCommand("reloadholograms").setExecutor(new ReloadHologramsCommand(this));
 
         getServer().getPluginManager().registerEvents(new JoinTeleportListener(this), this);
         getServer().getPluginManager().registerEvents(new LaunchPadListener(this), this);
@@ -92,12 +95,14 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
         portals.loadAll();
         menuServers.loadAll();
+        portalHolograms.reload();
 
         int refreshTicks = getConfig().getInt("portal-refresh-seconds", 5) * 20;
         getServer().getScheduler().runTaskTimer(this, () -> {
             portals.refreshPlayerCounts();
             menuServers.refreshPlayerCounts();
             banChecks.refreshAll(allTargetServers());
+            portalHolograms.refreshContent();
         }, 40L, refreshTicks);
 
         int queueTicks = getConfig().getInt("queue-check-seconds", 3) * 20;
@@ -121,6 +126,7 @@ public class LobbySpawnPlugin extends JavaPlugin {
         loadSpawnLocation();
         portals.loadAll();
         menuServers.loadAll();
+        portalHolograms.reload();
         chatAds.reload();
     }
 
@@ -212,6 +218,10 @@ public class LobbySpawnPlugin extends JavaPlugin {
 
     public PortalManager getPortals() {
         return portals;
+    }
+
+    public PortalHologramManager getPortalHolograms() {
+        return portalHolograms;
     }
 
     public ServerQueueManager getQueue() {
