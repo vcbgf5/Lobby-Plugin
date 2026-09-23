@@ -164,7 +164,7 @@ public class ServerSelectorMenu {
 
         int count = plugin.getPlayerCounts().getCount(target);
         int effectiveMax = effectiveMaxFor(target);
-        if (count >= effectiveMax) {
+        if (count >= effectiveMax && !ServerQueueManager.hasBypass(player)) {
             plugin.getQueue().enqueue(target, player);
             return;
         }

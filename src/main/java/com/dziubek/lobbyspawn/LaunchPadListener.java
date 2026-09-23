@@ -82,7 +82,7 @@ public class LaunchPadListener implements Listener {
 
         int count = plugin.getPlayerCounts().getCount(target);
         int effectiveMax = plugin.getPortals().getEffectiveMaxPlayers(portal);
-        if (count >= effectiveMax) {
+        if (count >= effectiveMax && !ServerQueueManager.hasBypass(player)) {
             plugin.getQueue().enqueue(target, player);
             return;
         }

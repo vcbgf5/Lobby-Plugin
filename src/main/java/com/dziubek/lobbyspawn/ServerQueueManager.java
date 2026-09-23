@@ -12,10 +12,15 @@ import java.util.UUID;
 
 public class ServerQueueManager {
 
+    /** Owner/Admin - w ogóle nie czekają w kolejce, wchodzą nawet gdy serwer jest "pełny". */
+    private static final String BYPASS_PERMISSION = "lobbyspawn.queue.bypass";
+    /** VIP - dalej czeka w kolejce, ale wskakuje przed zwykłych graczy (za innymi VIP-ami). */
+    private static final String PRIORITY_PERMISSION = "lobbyspawn.queue.priority";
+
     private final LobbySpawnPlugin plugin;
 
     // nazwa serwera -> kolejka UUID graczy czekających
-    private final Map<String, Queue<UUID>> queues = new LinkedHashMap<>();
+    private final Map<String, LinkedList<UUID>> queues = new LinkedHashMap<>();
     // nazwa serwera -> maksymalna liczba graczy (ustawiona przy tworzeniu portalu)
     private final Map<String, Integer> maxPlayers = new LinkedHashMap<>();
 
@@ -32,14 +37,36 @@ public class ServerQueueManager {
         return q != null && q.contains(uuid);
     }
 
+    /** Owner/Admin (lobbyspawn.queue.bypass) - traktowani tak, jakby serwer nigdy nie był pełny. */
+    public static boolean hasBypass(Player player) {
+        return player.hasPermission(BYPASS_PERMISSION);
+    }
+
     public void enqueue(String serverName, Player player) {
-        Queue<UUID> q = queues.computeIfAbsent(serverName, k -> new LinkedList<>());
+        LinkedList<UUID> q = queues.computeIfAbsent(serverName, k -> new LinkedList<>());
         if (q.contains(player.getUniqueId())) {
             player.sendMessage("§eJuż jesteś w kolejce do serwera " + serverName + " (pozycja " + (position(serverName, player.getUniqueId()) + 1) + "). §7Wpisz /leavequeue aby zrezygnować.");
             return;
         }
-        q.add(player.getUniqueId());
-        player.sendMessage("§eSerwer " + serverName + " jest pełny. Dodano Cię do kolejki (pozycja " + q.size() + "). §7Wpisz /leavequeue aby zrezygnować.");
+
+        if (player.hasPermission(PRIORITY_PERMISSION)) {
+            // Wskakuje za ostatnim innym graczem-priorytetowym, ale przed pierwszym zwyklym -
+            // wielu VIP-ów ustawia sie miedzy soba w kolejnosci dolaczania, nie na sile na czolo.
+            int insertAt = 0;
+            for (UUID uuid : q) {
+                Player queued = plugin.getServer().getPlayer(uuid);
+                if (queued == null || !queued.hasPermission(PRIORITY_PERMISSION)) {
+                    break;
+                }
+                insertAt++;
+            }
+            q.add(insertAt, player.getUniqueId());
+        } else {
+            q.add(player.getUniqueId());
+        }
+
+        player.sendMessage("§eSerwer " + serverName + " jest pełny. Dodano Cię do kolejki (pozycja "
+                + (position(serverName, player.getUniqueId()) + 1) + "). §7Wpisz /leavequeue aby zrezygnować.");
         if (plugin.isHudEnginePresent()) {
             HudEngineBridge.showQueueStatusHud(player);
         }
