@@ -125,7 +125,7 @@ public class ServerQueueManager {
      * nie per-portal).
      */
     public String getActiveQueueServer(UUID uuid) {
-        for (Map.Entry<String, Queue<UUID>> entry : queues.entrySet()) {
+        for (Map.Entry<String, LinkedList<UUID>> entry : queues.entrySet()) {
             if (entry.getValue().contains(uuid)) {
                 return entry.getKey();
             }
@@ -138,7 +138,7 @@ public class ServerQueueManager {
      * i jeśli tak, wpuszcza pierwszego gracza z kolejki.
      */
     public void tick() {
-        for (Map.Entry<String, Queue<UUID>> entry : queues.entrySet()) {
+        for (Map.Entry<String, LinkedList<UUID>> entry : queues.entrySet()) {
             String serverName = entry.getKey();
             Queue<UUID> q = entry.getValue();
             if (q.isEmpty()) {
